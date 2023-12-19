@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Shape Fitting Game</title>
+  
+  <style>
+    canvas {
+      border: 2px solid black;
+      display: block;
+      margin: 20px auto;
+    }
+    #score {
+      font-size: 24px;
+      margin-top: 10px;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="gameCanvas" width="600" height="400"></canvas>
+
+  <div id="score"></div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let score = 3;
+    let square = { x: 50, y: 50, width: 50, height: 50 };
+    let holes = [
+      { x: 200, y: 100, width: 100, height: 100, shape: 'square' },
+      { x: 400, y: 100, radius: 50, shape: 'circle' },
+      { x: 300, y: 250, width: 120, height: 100, shape: 'triangle' }
+    ];
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      holes.forEach(hole => {
+        if (hole.shape === 'square') {
+          ctx.fillStyle = 'lightgray';
+          ctx.fillRect(hole.x, hole.y, hole.width, hole.height);
+        } else if (hole.shape === 'circle') {
+          ctx.beginPath();
+          ctx.arc(hole.x, hole.y, hole.radius, 0, Math.PI * 2);
+          ctx.fillStyle = 'lightgray';
+          ctx.fill();
+        } else if (hole.shape === 'triangle') {
+          ctx.beginPath();
+          ctx.moveTo(hole.x, hole.y);
+          ctx.lineTo(hole.x + hole.width / 2, hole.y - hole.height);
+          ctx.lineTo(hole.x + hole.width, hole.y);
+          ctx.closePath();
+          ctx.fillStyle = 'lightgray';
+          ctx.fill();
+        }
+      });
+
+      ctx.fillStyle = 'blue';
+      ctx.fillRect(square.x, square.y, square.width, square.height);
+    }
+
+    function checkCollision() {
+      holes.forEach(hole => {
+        if (hole.shape === 'square') {
+          if (
+            square.x >= hole.x &&
+            square.x + square.width <= hole.x + hole.width &&
+            square.y >= hole.y &&
+            square.y + square.height <= hole.y + hole.height
+          ) {
+            score++;
+            updateScore();
+            square.x = 50;
+            square.y = 50;
+          }
+        }
+      });
+    }
+
+    function updateScore() {
+      const scoreDiv = document.getElementById('score');
+      scoreDiv.innerHTML += '🌟'
+    }
+
+    let dragging = false;
+    canvas.addEventListener('mousedown', function(e) {
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
+
+      if (
+        mouseX >= square.x &&
+        mouseX <= square.x + square.width &&
+        mouseY >= square.y &&
+        mouseY <= square.y + square.height
+      ) {
+        dragging = true;
+      }
+    });
+
+    canvas.addEventListener('mousemove', function(e) {
+      if (dragging) {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+
+        square.x = mouseX - square.width / 2;
+        square.y = mouseY - square.height / 2;
+
+        draw();
+      }
+    });
+
+    canvas.addEventListener('mouseup', function() {
+      dragging = false;
+      checkCollision();
+      draw();
+    });
+
+    draw();
+  </script>
+</body>
+</html>
