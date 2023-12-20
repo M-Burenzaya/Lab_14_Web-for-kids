@@ -1,17 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <title>Web_for_kid</title>
-
   <style>
     canvas {
       border: 2px solid black;
       display: block;
       margin: 20px auto;
     }
-
     #score {
       font-size: 24px;
       margin-top: 10px;
@@ -19,12 +16,9 @@
     }
   </style>
 </head>
-
 <body>
   <canvas id="gameCanvas" width="600" height="400"></canvas>
-
   <div id="score"></div>
-
   <script>
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
@@ -38,70 +32,14 @@
       triangle: { x: 250, y: 130, width: 100, height: 80 },
     };
 
-    let center = [
-      { shape: "square", x: 300, y: 90 },
-      { shape: "traingle", x: 300, y: 170 },
-      { shape: "circle", x: 300, y: 90 },
-    ];
-
-    let squareColors = ["lightblue", "pink", "lightgreen"];
-    let circleColors = ["lightblue", "pink", "lightgreen"];
-    let triangleColors = ["lightblue", "pink", "lightgreen"];
+    let shapeColors = ["lightblue", "pink", "lightgreen"];
+    let shape_center = { x: 300, y: 90 };
 
     let holes = [
-      {
-        x: 75,
-        y: 200,
-        width: 100,
-        height: 100,
-        shape: "square",
-        color: squareColors[
-          Math.floor(Math.random() * squareColors.length)
-        ],
-      },
-      {
-        x: 300,
-        y: 250,
-        radius: 50,
-        shape: "circle",
-        color: circleColors[
-          Math.floor(Math.random() * circleColors.length)
-        ],
-      },
-      {
-        x: 425,
-        y: 300,
-        width: 120,
-        height: 100,
-        shape: "triangle",
-        color: triangleColors[
-          Math.floor(Math.random() * triangleColors.length)
-        ],
-      },
+      { x: 75, y: 200, width: 100, height: 100, shape: "square", color: shapeColors[Math.floor(Math.random() * shapeColors.length)] },
+      { x: 300, y: 250, radius: 50, shape: "circle", color: shapeColors[Math.floor(Math.random() * shapeColors.length)] },
+      { x: 425, y: 300, width: 120, height: 100, shape: "triangle", color: shapeColors[Math.floor(Math.random() * shapeColors.length)] },
     ];
-
-    function rand_shape_color() {
-      holes.forEach((hole) => {
-        if (hole.shape === "square") {
-          hole.color =
-            squareColors[
-            Math.floor(Math.random() * squareColors.length)
-            ];
-        } else if (hole.shape === "circle") {
-          hole.color =
-            circleColors[
-            Math.floor(Math.random() * circleColors.length)
-            ];
-        } else if (hole.shape === "triangle") {
-          hole.color =
-            triangleColors[
-            Math.floor(
-              Math.random() * triangleColors.length
-            )
-            ];
-        }
-      });
-    }
 
     function draw_holes() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -118,10 +56,7 @@
         } else if (hole.shape === "triangle") {
           ctx.beginPath();
           ctx.moveTo(hole.x, hole.y);
-          ctx.lineTo(
-            hole.x + hole.width / 2,
-            hole.y - hole.height
-          );
+          ctx.lineTo(hole.x + hole.width / 2, hole.y - hole.height);
           ctx.lineTo(hole.x + hole.width, hole.y);
           ctx.closePath();
           ctx.fill();
@@ -132,41 +67,19 @@
       const shapeProperties = movingShapeProperties[movingShape];
 
       if (movingShape === "square") {
-        ctx.fillRect(
-          shapeProperties.x,
-          shapeProperties.y,
-          shapeProperties.width,
-          shapeProperties.height
-        );
+        ctx.fillRect(shapeProperties.x, shapeProperties.y, shapeProperties.width, shapeProperties.height);
       } else if (movingShape === "circle") {
         ctx.beginPath();
-        ctx.arc(
-          shapeProperties.x,
-          shapeProperties.y,
-          shapeProperties.radius,
-          0,
-          Math.PI * 2
-        );
+        ctx.arc(shapeProperties.x, shapeProperties.y, shapeProperties.radius, 0, Math.PI * 2);
         ctx.fill();
       } else if (movingShape === "triangle") {
         ctx.beginPath();
         ctx.moveTo(shapeProperties.x, shapeProperties.y);
-        ctx.lineTo(
-          shapeProperties.x + shapeProperties.width / 2,
-          shapeProperties.y - shapeProperties.height
-        );
-        ctx.lineTo(
-          shapeProperties.x + shapeProperties.width,
-          shapeProperties.y
-        );
+        ctx.lineTo(shapeProperties.x + shapeProperties.width / 2, shapeProperties.y - shapeProperties.height);
+        ctx.lineTo(shapeProperties.x + shapeProperties.width, shapeProperties.y);
         ctx.closePath();
         ctx.fill();
       }
-    }
-
-    function updateScore() {
-      const scoreDiv = document.getElementById("score");
-      scoreDiv.innerHTML += "🌟";
     }
 
     function draw_shape() {
@@ -176,72 +89,92 @@
 
     let initialClickX, initialClickY;
     let initialShapeX, initialShapeY;
-    
+    let initialCenterX, initialCenterY;
+
     function showCursorPosition(event) {
       const rect = canvas.getBoundingClientRect();
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
-    
-      if (isDragging && x >= 260 && x <= 340 && y >= 50 && y <= 130) {
+
+      if (isDragging) {
         if (!initialClickX && !initialClickY) {
           initialClickX = x;
           initialClickY = y;
-    
+
           initialShapeX = movingShapeProperties[movingShape].x;
           initialShapeY = movingShapeProperties[movingShape].y;
+
+          initialCenterX = shape_center.x;
+          initialCenterY = shape_center.y;
         }
 
         const offsetX = x - initialClickX;
         const offsetY = y - initialClickY;
-  
+
+        shape_center.x = initialCenterX + offsetX;
+        shape_center.y = initialCenterY + offsetY;
+
         movingShapeProperties[movingShape].x = initialShapeX + offsetX;
         movingShapeProperties[movingShape].y = initialShapeY + offsetY;
-    
+
         draw_holes();
+        drawEdges();
       } else {
         initialClickX = null;
         initialClickY = null;
       }
     }
 
-    // Mouse down event listener to start dragging
     canvas.addEventListener("mousedown", function (event) {
       const rect = canvas.getBoundingClientRect();
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
 
-      if (x >= 260 && x <= 340 && y >= 50 && y <= 130) {
+      if (x >= shape_center.x - 40 && x <= shape_center.x + 40 && y >= shape_center.y - 40 && y <= shape_center.y + 40) {
         isDragging = true;
       }
     });
-    
+
     canvas.addEventListener("mouseup", function () {
       isDragging = false;
     });
 
-
     canvas.addEventListener("mousemove", function (event) {
       showCursorPosition(event);
     });
-    
+
+    canvas.addEventListener('contextmenu', function (event) {
+      event.preventDefault();
+
+      const rect = canvas.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+
+      if (x >= shape_center.x - 40 && x <= shape_center.x + 40 && y >= shape_center.y - 40 && y <= shape_center.y + 40) {
+        nextColor();
+        draw_holes();
+        drawEdges();
+      }
+    });
+
+    function nextColor() {
+      holes.forEach((hole) => {
+        hole.color = shapeColors[Math.floor(Math.random() * shapeColors.length)];
+      });
+    }
+
     function drawEdges() {
       ctx.beginPath();
       ctx.lineWidth = 3;
-      ctx.rect(260, 50, 80, 80);
+      ctx.rect(shape_center.x - 40, shape_center.y - 40, 80, 80);
       ctx.strokeStyle = 'red';
       ctx.stroke();
-      
-      
     }
-    
-    
-    
+
     draw_shape();
     draw_holes();
-    
     drawEdges();
-    
+
   </script>
 </body>
-
 </html>
