@@ -181,9 +181,23 @@ function checkCollision() {
                 
                 if (dist < 10) {
                     movingShapeProperties = movingShapeProperties_init;
+                    
+                    score_temp++;
+                    
+                    if (score_temp >= 5) {
+                        userScore++;
+                        setCookie('score', userScore, 30);
+                        const scoreDiv = document.getElementById('total_score');
+                        scoreDiv.textContent = '✨' + userScore;
+                        playrewordSound();
+                        score_temp = 0;
+                    }
+                    
                     updateScore();
                     new_shape();
                     updateScreen();
+                    playScoreSound();
+                    
                     isDragging = false;
                 }   
             }
@@ -192,9 +206,22 @@ function checkCollision() {
     });  
 }
 
+function playScoreSound() {
+    const scoreSound = new Audio('sfx.mp3');
+    scoreSound.play();
+}
+
+function playrewordSound() {
+    const scoreSound = new Audio('sfx2.mp3');
+    scoreSound.play();
+}
+
 function updateScore() {
     const scoreDiv = document.getElementById('score');
-    scoreDiv.innerHTML += '🌟';
+    scoreDiv.innerHTML = '';
+    for (let i = 0; i <= score_temp; i++) {
+        scoreDiv.innerHTML += '🌟';
+    }
 }
 
 function nextColor() {
@@ -259,6 +286,35 @@ const helpButton = document.getElementById("helpButton");
 helpButton.addEventListener("click", function () {
     animateFinger();
 });
+
+
+function setCookie(name, value, days) {
+    const date = new Date();
+    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+    const expires = "expires=" + date.toUTCString();
+    document.cookie = name + "=" + value + ";" + expires + ";path=/";
+}
+
+function getCookie(name) {
+    const cookieName = name + "=";
+    const decodedCookie = decodeURIComponent(document.cookie);
+    const cookieArray = decodedCookie.split(';');
+    for (let i = 0; i < cookieArray.length; i++) {
+        let cookie = cookieArray[i];
+        while (cookie.charAt(0) === ' ') {
+            cookie = cookie.substring(1);
+        }
+        if (cookie.indexOf(cookieName) === 0) {
+            return cookie.substring(cookieName.length, cookie.length);
+        }
+    }
+    return "";
+}
+
+var score_temp = 0;
+
+let userScore = getCookie('score');
+console.log('User score:', userScore);
 
 new_shape();
 updateScreen();

@@ -5,34 +5,58 @@ body {
   justify-content: flex-start;
   height: 100vh;
   margin: 0;
+  background-image: url('Background.png');
+  backdrop-filter: blur(10px);
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 #canvas-container {
-  width: 600px; height: 400px;
+  width: 600px;
+  height: 400px;
   position: relative;
   margin: 50px;
+  border-radius: 20px;
+  overflow: hidden;
+  background-color: rgb(41, 41, 41, 0.3);
 }
 
 #gameCanvas {
-  border: 2px solid black;
+  border: none;
+  border-radius: 18px;
 }
 
 #guide-button-container {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 20px;
+  right: 20px;
   z-index: 1;
 }
 
 .image-button {
-  width: 40px;
-  height: 40px;
+  width: 50px;
+  height: 50px;
+  border-radius: 5px;
   background-image: url('QB.jpg');
   background-size: cover;
   border: none;
   cursor: pointer;
 }
-
-#score {
-  width: 600; height: 300px;
+#total_score {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 1;
+  font-size: 50px;
+  font-weight: bold;
+  font-family: 'Arial Black', sans-serif;
+  color: white;
+  cursor: default;
 }
+#score {
+  width: 600px;
+  height: 300px;
+  font-size: 24px;
+  text-align: center;
+}
+
