@@ -3,22 +3,27 @@ const ctx = canvas.getContext("2d");
 
 let isDragging = false;
 
-let movingShape;
-let movingShapeProperties = {
+let shapes = ["square", "circle", "triangle"];
+
+var movingShape;
+var movingShapeProperties = {};
+
+let movingShapeProperties_init = {
     square: { x: 260, y: 50, width: 80, height: 80 },
     circle: { x: 300, y: 90, radius: 40 },
     triangle: { x: 250, y: 130, width: 100, height: 80 },
 };
+let backupMovingShapeProperties = JSON.parse(JSON.stringify(movingShapeProperties_init));
 
 let shapeColors = ["lightblue", "pink", "lightgreen"];
-let shape_center = { x: 300, y: 90 };
+var shape_center = { x: 300, y: 90 };
 
 let shapeColorId = Math.floor(Math.random() * shapeColors.length);
 
-let holes = [
-    { x: 75, y: 200, width: 100, height: 100, shape: "square", color: shapeColors[Math.floor(Math.random() * shapeColors.length)] },
-    { x: 300, y: 250, radius: 50, shape: "circle", color: shapeColors[Math.floor(Math.random() * shapeColors.length)] },
-    { x: 425, y: 300, width: 120, height: 100, shape: "triangle", color: shapeColors[Math.floor(Math.random() * shapeColors.length)] },
+var holes = [
+    { x: 75, y: 200, width: 100, height: 100, shape: "square", colorId: 0},
+    { x: 300, y: 250, radius: 50, shape: "circle", colorId: 0},
+    { x: 425, y: 300, width: 120, height: 100, shape: "triangle", colorId: 0},
 ];
 
 let holes_center = [
@@ -28,10 +33,8 @@ let holes_center = [
 ];
 
 function draw_holes() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
     holes.forEach((hole) => {
-        ctx.fillStyle = hole.color;
+        ctx.fillStyle = shapeColors[hole.colorId];
 
         if (hole.shape === "square") {
             ctx.fillRect(hole.x, hole.y, hole.width, hole.height);
@@ -48,7 +51,27 @@ function draw_holes() {
             ctx.fill();
         }
     });
+}
 
+function new_shape() {
+    shape_center.x = 300;
+    shape_center.y = 90;
+    
+    holes.forEach((hole) => {
+        hole.colorId = Math.floor(Math.random() * shapeColors.length);
+    });
+    
+    movingShape = shapes[Math.floor(Math.random() * shapes.length)];
+    movingShapeProperties = JSON.parse(JSON.stringify(backupMovingShapeProperties));
+}
+
+function updateScreen() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    draw_holes();
+    draw_shape();
+}
+
+function draw_shape() {
     ctx.fillStyle = shapeColors[shapeColorId];
     const shapeProperties = movingShapeProperties[movingShape];
 
@@ -66,11 +89,6 @@ function draw_holes() {
         ctx.closePath();
         ctx.fill();
     }
-}
-
-function draw_shape() {
-    const shapes = ["square", "circle", "triangle"];
-    movingShape = shapes[Math.floor(Math.random() * shapes.length)];
 }
 
 let initialClickX, initialClickY;
@@ -102,8 +120,9 @@ function showCursorPosition(event) {
 
         movingShapeProperties[movingShape].x = initialShapeX + offsetX;
         movingShapeProperties[movingShape].y = initialShapeY + offsetY;
-
-        draw_holes();
+        
+        checkCollision()
+        updateScreen();
     } else {
         initialClickX = null;
         initialClickY = null;
@@ -137,9 +156,46 @@ canvas.addEventListener('contextmenu', function (event) {
 
     if (x >= shape_center.x - 40 && x <= shape_center.x + 40 && y >= shape_center.y - 40 && y <= shape_center.y + 40) {
         nextColor();
-        draw_holes();
+        updateScreen();
+        
+        // var text = '';
+        
+        // console.log(shapeColorId);
+        
+        // holes.forEach((hole) => {
+        //     text += hole.colorId;
+        // });
+        // console.log(text);
     }
 });
+
+// && 
+function checkCollision() {
+    holes.forEach((hole) => {
+        if (hole.colorId === shapeColorId){
+            holes_center.forEach((hole) => {
+            if ((hole.shape === movingShape) ) {
+                const distX = Math.abs(shape_center.x - hole.x);
+                const distY = Math.abs(shape_center.y - hole.y);
+                const dist = Math.sqrt(distX * distX + distY * distY);
+                
+                if (dist < 10) {
+                    movingShapeProperties = movingShapeProperties_init;
+                    updateScore();
+                    new_shape();
+                    updateScreen();
+                    isDragging = false;
+                }   
+            }
+        });
+        }
+    });  
+}
+
+function updateScore() {
+    const scoreDiv = document.getElementById('score');
+    scoreDiv.innerHTML += '🌟';
+}
 
 function nextColor() {
     shapeColorId = (shapeColorId + 1) % shapeColors.length;
@@ -181,6 +237,7 @@ function moveFinger(startX, startY, endX, endY) {
 
     const interval = setInterval(() => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        draw_shape();
         draw_holes();
 
         const x = (1 - t) * startX + t * endX;
@@ -192,8 +249,7 @@ function moveFinger(startX, startY, endX, endY) {
 
         if (t > 1) {
             clearInterval(interval);
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            draw_holes();
+            updateScreen();
         }
     }, 100);
 }
@@ -204,5 +260,5 @@ helpButton.addEventListener("click", function () {
     animateFinger();
 });
 
-draw_shape();
-draw_holes();
+new_shape();
+updateScreen();
